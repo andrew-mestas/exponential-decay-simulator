@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type PointerEvent } from "react";
 import {
   runSimulation,
   type SimulationResult,
@@ -89,7 +89,7 @@ function CurveChart({
       ? 0
       : Math.min(82, Math.max(4, ((activePoint.timestamp - startTime) / (endTime - startTime)) * 100));
 
-  function handlePointerMove(event: React.PointerEvent<SVGSVGElement>) {
+  function handlePointerMove(event: PointerEvent<SVGSVGElement>) {
     const rect = event.currentTarget.getBoundingClientRect();
     if (rect.width === 0 || samplePoints.length === 0) return;
     const viewBoxX = ((event.clientX - rect.left) / rect.width) * width;
@@ -313,7 +313,7 @@ function App() {
           ? [{
               id: "total",
               label: "Combined amount",
-              color: "#f8fafc",
+              color: "var(--total-curve)",
               points: result.total,
               isTotal: true,
             }]
