@@ -354,7 +354,7 @@ function App() {
     ]);
     setNextId((current) => current + 1);
     setDraftAmount("");
-    setDraftTimestamp(startTime);
+    setDraftTimestamp("");
     setDraftError(null);
   }
 
