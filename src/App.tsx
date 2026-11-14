@@ -158,7 +158,7 @@ function CurveChart({
               textAnchor="middle"
               className="chart-tick"
             >
-              {formatNumber(time)}
+              {formatHoursAsDuration(time)}
             </text>
           );
         })}
@@ -220,7 +220,7 @@ function CurveChart({
       </svg>
       {activePoint && (
         <div className="chart-interaction-tooltip" style={{ left: `${tooltipLeft}%` }} aria-live="polite">
-          <strong>t = {formatNumber(activePoint.timestamp)}</strong>
+          <strong>t = {formatHoursAsDuration(activePoint.timestamp)}</strong>
           {curves.map((curve) => {
             const point = curve.points[hoverIndex!];
             return point ? (
@@ -546,12 +546,12 @@ function App() {
                 <article className="metric-card">
                   <span className="metric-label">Peak sampled amount</span>
                   <strong>{formatNumber(result.statistics.max)}</strong>
-                  <span className="metric-detail">At t = {formatNumber(result.statistics.maxTime)}</span>
+                  <span className="metric-detail">At t = {formatHoursAsDuration(result.statistics.maxTime)}</span>
                 </article>
                 <article className="metric-card">
                   <span className="metric-label">Minimum sampled amount</span>
                   <strong>{formatNumber(result.statistics.min)}</strong>
-                  <span className="metric-detail">At t = {formatNumber(result.statistics.minTime)}</span>
+                  <span className="metric-detail">At t = {formatHoursAsDuration(result.statistics.minTime)}</span>
                 </article>
                 <article className="metric-card">
                   <span className="metric-label">Analytical AUC</span>
