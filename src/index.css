@@ -16,6 +16,11 @@
   --border: #e8e8f0;
   --axis: #b9b9c8;
   --accent: #5b55bd;
+  --total-curve: #202033;
+  --crosshair: #55556d;
+  --tooltip-bg: #ffffff;
+  --tooltip-border: #d8d8e5;
+  --tooltip-text: #202033;
 }
 
 * {
@@ -50,6 +55,11 @@ input {
     --border: #343443;
     --axis: #68687a;
     --accent: #aaa4ff;
+    --total-curve: #f8fafc;
+    --crosshair: #d1d5db;
+    --tooltip-bg: #292936;
+    --tooltip-border: #4b4b60;
+    --tooltip-text: #f8fafc;
   }
 
   .button {
