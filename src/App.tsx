@@ -21,14 +21,14 @@ interface Curve {
 }
 
 const CURVE_COLORS = [
-  "#4f46e5",
-  "#0891b2",
-  "#d97706",
-  "#db2777",
-  "#16a34a",
-  "#7c3aed",
-  "#ea580c",
-  "#0f766e",
+  "#60a5fa",
+  "#22d3ee",
+  "#fbbf24",
+  "#fb7185",
+  "#a78bfa",
+  "#4ade80",
+  "#f472b6",
+  "#fb923c",
 ];
 
 const INITIAL_EVENTS: EventDraft[] = [
@@ -59,6 +59,7 @@ function CurveChart({
   startTime: number;
   endTime: number;
 }) {
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const width = 900;
   const height = 360;
   const margin = { top: 20, right: 24, bottom: 48, left: 66 };
@@ -80,6 +81,34 @@ function CurveChart({
   const gridValues = Array.from({ length: 5 }, (_, index) =>
     (yMaximum * index) / 4,
   );
+  const samplePoints = curves[0]?.points ?? [];
+  const activePoint =
+    hoverIndex === null ? null : samplePoints[hoverIndex] ?? null;
+  const tooltipLeft =
+    activePoint === null
+      ? 0
+      : Math.min(82, Math.max(4, ((activePoint.timestamp - startTime) / (endTime - startTime)) * 100));
+
+  function handlePointerMove(event: React.PointerEvent<SVGSVGElement>) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    if (rect.width === 0 || samplePoints.length === 0) return;
+    const viewBoxX = ((event.clientX - rect.left) / rect.width) * width;
+    const fraction = Math.min(
+      1,
+      Math.max(0, (viewBoxX - margin.left) / plotWidth),
+    );
+    const targetTime = startTime + fraction * (endTime - startTime);
+    let nearestIndex = 0;
+    let nearestDistance = Number.POSITIVE_INFINITY;
+    samplePoints.forEach((point, index) => {
+      const distance = Math.abs(point.timestamp - targetTime);
+      if (distance < nearestDistance) {
+        nearestDistance = distance;
+        nearestIndex = index;
+      }
+    });
+    setHoverIndex(nearestIndex);
+  }
 
   return (
     <div className="chart-scroll">
@@ -87,7 +116,9 @@ function CurveChart({
         className="decay-chart"
         viewBox={`0 0 ${width} ${height}`}
         role="img"
-        aria-label="Exponential decay curves over simulation time"
+        aria-label="Interactive exponential decay chart. Move the pointer over the plot to inspect values."
+        onPointerMove={handlePointerMove}
+        onPointerLeave={() => setHoverIndex(null)}
       >
         {gridValues.map((value) => (
           <g key={value}>
@@ -153,19 +184,54 @@ function CurveChart({
             )
             .join(" ");
           return (
-            <path
-              key={curve.id}
-              d={path}
-              fill="none"
-              stroke={curve.color}
-              strokeWidth={curve.isTotal ? 3.5 : 2}
-              strokeDasharray={curve.isTotal ? undefined : "6 4"}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+            <g key={curve.id}>
+              <path
+                d={path}
+                fill="none"
+                stroke={curve.color}
+                strokeWidth={curve.isTotal ? 3.5 : 2.5}
+                strokeDasharray={curve.isTotal ? undefined : "7 4"}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                vectorEffect="non-scaling-stroke"
+              />
+              {activePoint && curve.points[hoverIndex!] && (
+                <circle
+                  cx={x(curve.points[hoverIndex!].timestamp)}
+                  cy={y(curve.points[hoverIndex!].value)}
+                  r={curve.isTotal ? 5 : 4}
+                  fill={curve.color}
+                  stroke="var(--surface)"
+                  strokeWidth="2"
+                />
+              )}
+            </g>
           );
         })}
+        {activePoint && (
+          <line
+            x1={x(activePoint.timestamp)}
+            x2={x(activePoint.timestamp)}
+            y1={margin.top}
+            y2={margin.top + plotHeight}
+            className="chart-crosshair"
+          />
+        )}
       </svg>
+      {activePoint && (
+        <div className="chart-interaction-tooltip" style={{ left: `${tooltipLeft}%` }} aria-live="polite">
+          <strong>t = {formatNumber(activePoint.timestamp)}</strong>
+          {curves.map((curve) => {
+            const point = curve.points[hoverIndex!];
+            return point ? (
+              <span className="tooltip-value" key={curve.id}>
+                <i style={{ backgroundColor: curve.color }} />
+                {curve.label}: {formatNumber(point.value)}
+              </span>
+            ) : null;
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -232,17 +298,22 @@ function App() {
     ? [
         ...result.contributions
           .filter((series) => visibleEvents[series.eventId] !== false)
-          .map((series, index) => ({
-            id: series.eventId,
-            label: events.find((event) => event.id === series.eventId)?.id ?? series.eventId,
-            color: CURVE_COLORS[index % CURVE_COLORS.length],
-            points: series.points,
-          })),
+          .map((series) => {
+            const eventIndex = result.contributions.findIndex(
+              (item) => item.eventId === series.eventId,
+            );
+            return {
+              id: series.eventId,
+              label: `Event ${eventIndex + 1}`,
+              color: CURVE_COLORS[eventIndex % CURVE_COLORS.length],
+              points: series.points,
+            };
+          }),
         ...(showTotal
           ? [{
               id: "total",
               label: "Combined amount",
-              color: "#111827",
+              color: "#f8fafc",
               points: result.total,
               isTotal: true,
             }]
@@ -343,28 +414,33 @@ function App() {
                       Remove
                     </button>
                   </div>
-                  <label className="field-label" htmlFor={`amount-${event.id}`}>
-                    Amount
-                  </label>
-                  <input
-                    id={`amount-${event.id}`}
-                    type="number"
-                    min="0"
-                    step="any"
-                    value={event.amount}
-                    onChange={(change) => updateEvent(event.id, "amount", change.target.value)}
-                  />
-                  <label className="field-label" htmlFor={`time-${event.id}`}>
-                    Event time
-                    <span className="field-unit">elapsed time</span>
-                  </label>
-                  <input
-                    id={`time-${event.id}`}
-                    type="number"
-                    step="any"
-                    value={event.timestamp}
-                    onChange={(change) => updateEvent(event.id, "timestamp", change.target.value)}
-                  />
+                  <div className="event-input-grid">
+                    <div>
+                      <label className="field-label" htmlFor={`amount-${event.id}`}>
+                        Amount
+                      </label>
+                      <input
+                        id={`amount-${event.id}`}
+                        type="number"
+                        min="0"
+                        step="any"
+                        value={event.amount}
+                        onChange={(change) => updateEvent(event.id, "amount", change.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="field-label" htmlFor={`time-${event.id}`}>
+                        Time
+                      </label>
+                      <input
+                        id={`time-${event.id}`}
+                        type="number"
+                        step="any"
+                        value={event.timestamp}
+                        onChange={(change) => updateEvent(event.id, "timestamp", change.target.value)}
+                      />
+                    </div>
+                  </div>
                 </div>
               ))}
               {events.length === 0 && (
