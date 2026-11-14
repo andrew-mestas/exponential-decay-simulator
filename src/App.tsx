@@ -262,11 +262,13 @@ function App() {
       endValue <= startValue ||
       !Number.isFinite(intervalValue) ||
       intervalValue <= 0 ||
-      numericEvents.some(
+      events.some(
         (event) =>
-          !Number.isFinite(event.timestamp) ||
-          !Number.isFinite(event.amount) ||
-          event.amount < 0,
+          event.timestamp.trim() === "" ||
+          event.amount.trim() === "" ||
+          !Number.isFinite(Number(event.timestamp)) ||
+          !Number.isFinite(Number(event.amount)) ||
+          Number(event.amount) < 0,
       )
     ) {
       return { result: null, error: "Enter finite values, a positive half-life and sample interval, and an end time after the start time. Event amounts cannot be negative." };
@@ -581,75 +583,7 @@ function App() {
                 </article>
               </div>
 
-              <div className="data-table-card">
-                <div className="table-heading">
-                  <div>
-                    <p className="eyebrow">EVENT BREAKDOWN</p>
-                    <h3>Individual exposure</h3>
-                  </div>
-                </div>
-                <div className="table-scroll">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Event</th>
-                        <th>Input time</th>
-                        <th>Input amount</th>
-                        <th>Analytical AUC</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {result.contributions.map((series, index) => {
-                        const event = events.find((item) => item.id === series.eventId);
-                        return (
-                          <tr key={series.eventId}>
-                            <td>
-                              <span className="table-dot" style={{ backgroundColor: CURVE_COLORS[index % CURVE_COLORS.length] }} />
-                              Event {index + 1}
-                            </td>
-                            <td>
-                              <input
-                                className="table-edit-input"
-                                aria-label={`Event ${index + 1} time`}
-                                type="number"
-                                step="any"
-                                value={event?.timestamp ?? ""}
-                                onChange={(change) => updateEvent(series.eventId, "timestamp", change.target.value)}
-                              />
-                            </td>
-                            <td>
-                              <input
-                                className="table-edit-input"
-                                aria-label={`Event ${index + 1} amount`}
-                                type="number"
-                                min="0"
-                                step="any"
-                                value={event?.amount ?? ""}
-                                onChange={(change) => updateEvent(series.eventId, "amount", change.target.value)}
-                              />
-                            </td>
-                            <td>{formatNumber(series.auc)}</td>
-                            <td>
-                              <button
-                                className="remove-button"
-                                type="button"
-                                onClick={() => removeEvent(series.eventId)}
-                                aria-label={`Delete event ${index + 1}`}
-                              >
-                                Delete
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                      {events.length === 0 && (
-                        <tr><td colSpan={5} className="empty-table-cell">No events added yet.</td></tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+
             </>
           ) : (
             <div className="empty-results">
@@ -657,6 +591,77 @@ function App() {
               <p>Correct the highlighted input values to generate the curves and summary statistics.</p>
             </div>
           )}
+
+          <div className="data-table-card">
+            <div className="table-heading">
+              <div>
+                <p className="eyebrow">EVENT BREAKDOWN</p>
+                <h3>Manage events</h3>
+              </div>
+              <span className="event-count">{events.length} events</span>
+            </div>
+            <div className="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Event</th>
+                    <th>Input time</th>
+                    <th>Input amount</th>
+                    <th>Analytical AUC</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {events.map((event, index) => {
+                    const series = result?.contributions.find((item) => item.eventId === event.id);
+                    return (
+                      <tr key={event.id}>
+                        <td>
+                          <span className="table-dot" style={{ backgroundColor: CURVE_COLORS[index % CURVE_COLORS.length] }} />
+                          Event {index + 1}
+                        </td>
+                        <td>
+                          <input
+                            className="table-edit-input"
+                            aria-label={`Event ${index + 1} time`}
+                            type="number"
+                            step="any"
+                            value={event.timestamp}
+                            onChange={(change) => updateEvent(event.id, "timestamp", change.target.value)}
+                          />
+                        </td>
+                        <td>
+                          <input
+                            className="table-edit-input"
+                            aria-label={`Event ${index + 1} amount`}
+                            type="number"
+                            min="0"
+                            step="any"
+                            value={event.amount}
+                            onChange={(change) => updateEvent(event.id, "amount", change.target.value)}
+                          />
+                        </td>
+                        <td>{series ? formatNumber(series.auc) : "—"}</td>
+                        <td>
+                          <button
+                            className="remove-button"
+                            type="button"
+                            onClick={() => removeEvent(event.id)}
+                            aria-label={`Delete event ${index + 1}`}
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {events.length === 0 && (
+                    <tr><td colSpan={5} className="empty-table-cell">No events added yet.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
           <p className="model-note">
             This is a mathematical first-order decay model. AUC is amount multiplied by time;
             it is not automatically a physical concentration or clinical measurement.
