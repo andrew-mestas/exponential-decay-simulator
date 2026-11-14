@@ -577,3 +577,65 @@ tbody tr:last-child td {
     padding: 16px;
   }
 }
+
+
+.event-entry-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 15px;
+  padding: 13px;
+  border: 1px dashed var(--border);
+  border-radius: 9px;
+  background: var(--card-bg);
+}
+
+.event-entry-form .event-input-grid .field-label {
+  margin-top: 0;
+}
+
+.add-event-submit {
+  justify-self: start;
+  min-width: 112px;
+}
+
+.draft-error {
+  margin: -4px 0 0;
+  color: #dc6666;
+  font-size: 11px;
+}
+
+.event-count {
+  color: var(--text);
+  font-size: 11px;
+}
+
+.table-edit-input {
+  width: 105px;
+  max-width: 100%;
+  padding: 7px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--input-bg);
+  color: var(--text-h);
+  font: inherit;
+  font-size: 12px;
+}
+
+.table-edit-input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.empty-table-cell {
+  color: var(--text);
+  text-align: center;
+  padding: 20px;
+}
+
+.data-table-card {
+  margin-top: 16px;
+}
+
+.data-table-card td:last-child {
+  text-align: right;
+}
