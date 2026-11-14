@@ -8,20 +8,20 @@ export function parseDurationToHours(input: string): number {
   const value = input.trim().toLowerCase();
   if (!value) throw new Error("Duration is required");
 
-  const numberPattern = String.raw`(?:\\d+(?:\\.\\d*)?|\\.\\d+)`;
-  const tokenPattern = new RegExp(`(${numberPattern})\\s*(d|day|days|h|hr|hrs|hour|hours|m|min|mins|minute|minutes)`, "gy");
+  const numberPattern = String.raw`(?:\d+(?:\.\d*)?|\.\d+)`;
+  const tokenPattern = new RegExp(`(${numberPattern})\\s*(days|day|d|hours|hour|hrs|hr|h|minutes|minute|mins|min|m)`, "gy");
   let position = 0;
   let totalHours = 0;
   let tokenCount = 0;
 
   while (position < value.length) {
-    while (position < value.length && /[\\s,]+/.test(value[position])) position++;
+    while (position < value.length && /[\s,]+/.test(value[position])) position++;
     if (position >= value.length) break;
 
     tokenPattern.lastIndex = position;
     const match = tokenPattern.exec(value);
     if (!match) {
-      if (tokenCount === 0 && /^[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)$/.test(value)) {
+      if (tokenCount === 0 && /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(value)) {
         const hours = Number(value);
         if (Number.isFinite(hours)) return hours;
       }
