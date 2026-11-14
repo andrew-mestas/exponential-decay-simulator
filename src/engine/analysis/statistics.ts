@@ -1,7 +1,5 @@
 /**
  * Summary statistics for a sampled time series.
- *
- * TDD scaffold: implement this function by making the statistics tests pass.
  */
 
 import { integrateTrapezoidal, type SeriesPoint } from "./integration";
@@ -16,17 +14,23 @@ export interface SeriesStatistics {
 }
 
 export function calculateSeriesStatistics(
-  _points: SeriesPoint[],
+  points: SeriesPoint[],
 ): SeriesStatistics {
-  if (_points.length === 1) throw new Error("Need more than one point");
-  let min = Number.MAX_VALUE;
-  let max = Number.MIN_VALUE;
-  let minTime = Number.MAX_VALUE;
-  let maxTime = Number.MIN_VALUE;
-  const auc = integrateTrapezoidal(_points);
-  const average =
-    auc / (_points[_points.length - 1].timestamp - _points[0].timestamp);
-  for (const point of _points) {
+  if (points.length < 2) {
+    throw new Error("Need at least two points to calculate time-weighted statistics");
+  }
+
+  // The integrator validates finite values and strictly increasing timestamps.
+  const auc = integrateTrapezoidal(points);
+  const duration = points[points.length - 1].timestamp - points[0].timestamp;
+  const average = auc / duration;
+
+  let min = points[0].value;
+  let max = points[0].value;
+  let minTime = points[0].timestamp;
+  let maxTime = points[0].timestamp;
+
+  for (const point of points.slice(1)) {
     if (point.value < min) {
       min = point.value;
       minTime = point.timestamp;
@@ -36,12 +40,6 @@ export function calculateSeriesStatistics(
       maxTime = point.timestamp;
     }
   }
-  return {
-    min,
-    max,
-    minTime,
-    maxTime,
-    auc,
-    average,
-  };
+
+  return { min, max, minTime, maxTime, auc, average };
 }
