@@ -5,6 +5,7 @@ import {
 } from "./engine/analysis/simulation";
 import type { InputEvent } from "./engine/contribution/contribution";
 import "./App.css";
+import { formatHoursAsDuration, parseDurationToHours } from "./time/duration";
 
 interface EventDraft {
   id: string;
@@ -34,7 +35,7 @@ const CURVE_COLORS = [
 function toInputEvents(drafts: EventDraft[]): InputEvent[] {
   return drafts.map((event) => ({
     id: event.id,
-    timestamp: Number(event.timestamp),
+    timestamp: parseDurationToHours(event.timestamp),
     amount: Number(event.amount),
   }));
 }
@@ -231,10 +232,25 @@ function CurveChart({
   );
 }
 
+function DurationInput({ id, label, value, onChange, presets = false }: { id: string; label: string; value: string; onChange: (value: string) => void; presets?: boolean }) {
+  const shortcuts = ["+1h", "+6h", "+12h", "+1d", "+2d", "+7d"];
+  function addShortcut(shortcut: string) {
+    let current = 0;
+    try { current = parseDurationToHours(value || "0h"); } catch { current = 0; }
+    onChange(formatHoursAsDuration(current + parseDurationToHours(shortcut.slice(1))));
+  }
+  return <div className="duration-field">
+    <label className="field-label" htmlFor={id}>{label}<span className="field-unit">hours internally</span></label>
+    <input id={id} type="text" placeholder="e.g. 2d 6h or 54h" value={value} onChange={(event) => onChange(event.target.value)} />
+    {presets && <div className="duration-presets">{shortcuts.map((shortcut) => <button key={shortcut} type="button" onClick={() => addShortcut(shortcut)}>{shortcut}</button>)}</div>}
+    <p className="duration-hint">Use d, h, m — for example, 1d 6h or 90m.</p>
+  </div>;
+}
+
 function App() {
   const [events, setEvents] = useState<EventDraft[]>([]);
   const [draftAmount, setDraftAmount] = useState("");
-  const [draftTimestamp, setDraftTimestamp] = useState("0");
+  const [draftTimestamp, setDraftTimestamp] = useState("0h");
   const [draftError, setDraftError] = useState<string | null>(null);
   const [halfLife, setHalfLife] = useState("24");
   const [startTime, setStartTime] = useState("0");
@@ -249,10 +265,18 @@ function App() {
     error: string | null;
   }>(() => {
     const numericEvents = toInputEvents(events);
-    const halfLifeValue = Number(halfLife);
-    const startValue = Number(startTime);
-    const endValue = Number(endTime);
-    const intervalValue = Number(sampleInterval);
+    let halfLifeValue: number;
+    let startValue: number;
+    let endValue: number;
+    let intervalValue: number;
+    try {
+      halfLifeValue = parseDurationToHours(halfLife);
+      startValue = parseDurationToHours(startTime);
+      endValue = parseDurationToHours(endTime);
+      intervalValue = parseDurationToHours(sampleInterval);
+    } catch {
+      return { result: null, error: "Enter valid durations such as 2d, 6h, or 1d 6h." };
+    }
 
     if (
       !Number.isFinite(halfLifeValue) ||
@@ -266,7 +290,7 @@ function App() {
         (event) =>
           event.timestamp.trim() === "" ||
           event.amount.trim() === "" ||
-          !Number.isFinite(Number(event.timestamp)) ||
+          !Number.isFinite(parseDurationToHours(event.timestamp)) ||
           !Number.isFinite(Number(event.amount)) ||
           Number(event.amount) < 0,
       )
@@ -348,7 +372,7 @@ function App() {
       ...current,
       {
         id: `event-${nextId}`,
-        timestamp: String(timestamp),
+        timestamp: formatHoursAsDuration(timestamp),
         amount: String(amount),
       },
     ]);
@@ -396,18 +420,7 @@ function App() {
                 <h2>Decay settings</h2>
               </div>
             </div>
-            <label className="field-label" htmlFor="half-life">
-              Half-life
-              <span className="field-unit">time units</span>
-            </label>
-            <input
-              id="half-life"
-              type="number"
-              min="0"
-              step="any"
-              value={halfLife}
-              onChange={(event) => setHalfLife(event.target.value)}
-            />
+            <DurationInput id="half-life" label="Half-life" value={halfLife} onChange={setHalfLife} />
             <p className="field-help">The amount halves after each half-life interval.</p>
           </section>
 
@@ -439,18 +452,7 @@ function App() {
                   />
                 </div>
                 <div>
-                  <label className="field-label" htmlFor="new-event-time">Event time</label>
-                  <input
-                    id="new-event-time"
-                    type="number"
-                    step="any"
-                    placeholder="e.g. 24"
-                    value={draftTimestamp}
-                    onChange={(change) => {
-                      setDraftTimestamp(change.target.value);
-                      setDraftError(null);
-                    }}
-                  />
+                  <DurationInput id="new-event-time" label="Event time" value={draftTimestamp} onChange={(value) => { setDraftTimestamp(value); setDraftError(null); }} presets />
                 </div>
               </div>
               {draftError && <p className="draft-error" role="alert">{draftError}</p>}
@@ -463,38 +465,13 @@ function App() {
             <h2>Simulation range</h2>
             <div className="two-column-fields">
               <div>
-                <label className="field-label" htmlFor="start-time">Start</label>
-                <input
-                  id="start-time"
-                  type="number"
-                  step="any"
-                  value={startTime}
-                  onChange={(event) => setStartTime(event.target.value)}
-                />
+                <DurationInput id="start-time" label="Start" value={startTime} onChange={setStartTime} />
               </div>
               <div>
-                <label className="field-label" htmlFor="end-time">End</label>
-                <input
-                  id="end-time"
-                  type="number"
-                  step="any"
-                  value={endTime}
-                  onChange={(event) => setEndTime(event.target.value)}
-                />
+                <DurationInput id="end-time" label="End" value={endTime} onChange={setEndTime} presets />
               </div>
             </div>
-            <label className="field-label" htmlFor="sample-interval">
-              Sample interval
-              <span className="field-unit">time units</span>
-            </label>
-            <input
-              id="sample-interval"
-              type="number"
-              min="0"
-              step="any"
-              value={sampleInterval}
-              onChange={(event) => setSampleInterval(event.target.value)}
-            />
+            <DurationInput id="sample-interval" label="Sample interval" value={sampleInterval} onChange={setSampleInterval} />
             <p className="field-help">The end time is included even when the interval does not divide the range evenly.</p>
           </section>
         </aside>
@@ -524,8 +501,8 @@ function App() {
                 {curves.length > 0 ? (
                   <CurveChart
                     curves={curves}
-                    startTime={Number(startTime)}
-                    endTime={Number(endTime)}
+                    startTime={parseDurationToHours(startTime)}
+                    endTime={parseDurationToHours(endTime)}
                   />
                 ) : (
                   <p className="empty-state chart-empty">Turn on a curve below to display it.</p>
@@ -621,8 +598,8 @@ function App() {
                           <input
                             className="table-edit-input"
                             aria-label={`Event ${index + 1} time`}
-                            type="number"
-                            step="any"
+                            type="text"
+                            placeholder="e.g. 1d 6h"
                             value={event.timestamp}
                             onChange={(change) => updateEvent(event.id, "timestamp", change.target.value)}
                           />
