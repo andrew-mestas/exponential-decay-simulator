@@ -24,8 +24,9 @@ describe("recurrence accumulation", () => {
     );
   });
 
-  it("matches direct evaluation before the first event", () => {
-    expect(calculateTotalAtByRecurrence(events, -1, 36)).toBe(0);
+  it("returns zero when the observation time is before the first event", () => {
+    const futureEvents = [{ id: "future", timestamp: 10, amount: 50 }];
+    expect(calculateTotalAtByRecurrence(futureEvents, 0, 36)).toBe(0);
   });
 
   it("handles unsorted input events", () => {
