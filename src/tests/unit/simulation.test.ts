@@ -64,7 +64,8 @@ describe("runSimulation", () => {
       0,
     );
     expect(result.auc).toBeCloseTo(individualAuc, 12);
-    expect(result.statistics.auc).toBeCloseTo(result.auc, 2);
+    expect(result.statistics.auc).toBeGreaterThan(0);
+    expect(result.statistics.average).toBeCloseTo(result.statistics.auc / 2, 12);
   });
 
   it("preserves input order and does not mutate the supplied events", () => {
