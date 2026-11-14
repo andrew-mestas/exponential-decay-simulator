@@ -53,21 +53,21 @@ The direct-sum implementation will serve as the simple reference implementation;
 
 ### Cumulative exposure (AUC)
 
-The definite integral over a selected interval measures amount accumulated over time:
+The definite integral over a selected interval measures the amount accumulated over time. We denote this area under the curve by AUC:
 
 $$
-\operatorname{AUC}(a,b) = \int_a^b A(t)\,dt
+\mathrm{AUC}(a,b) = \int_a^b A(t)\,dt
 $$
 
 Its units are amount multiplied by time (for example, unit-hours), not amount.
 
-The time-weighted average is:
+The time-weighted average amount over the interval is:
 
 $$
-A_{\mathrm{avg}} = \frac{\operatorname{AUC}(a,b)}{b-a}
+A_{\mathrm{avg}} = \frac{\mathrm{AUC}(a,b)}{b-a}
 $$
 
-The AUC is useful for comparing the overall profile of two schedules, while the instantaneous value and peak describe the amount at a particular time and the maximum reached.
+AUC is useful for comparing the overall profile of two schedules, while the instantaneous value and peak describe the amount at a particular time and the maximum reached.
 
 > **Model boundary:** This is a mathematical first-order, single-compartment decay model with instantaneous inputs. Its output is an abstract amount, not automatically a physical concentration, biological exposure, or dosing recommendation. Real systems may require absorption delays, distribution compartments, nonlinear elimination, or other domain-specific parameters.
 
