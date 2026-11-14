@@ -64,9 +64,14 @@ function CurveChart({
   const margin = { top: 20, right: 24, bottom: 48, left: 66 };
   const plotWidth = width - margin.left - margin.right;
   const plotHeight = height - margin.top - margin.bottom;
-  const maximum = Math.max(0, ...curves.flatMap((curve) =>
-    curve.points.map((point) => point.value),
-  ));
+  const maximum = curves.reduce(
+    (curveMaximum, curve) =>
+      curve.points.reduce(
+        (pointMaximum, point) => Math.max(pointMaximum, point.value),
+        curveMaximum,
+      ),
+    0,
+  );
   const yMaximum = maximum > 0 ? maximum * 1.1 : 1;
   const x = (time: number) =>
     margin.left + ((time - startTime) / (endTime - startTime)) * plotWidth;
@@ -175,11 +180,11 @@ function App() {
   const [showTotal, setShowTotal] = useState(true);
   const [nextId, setNextId] = useState(3);
 
-  const numericEvents = toInputEvents(events);
   const simulation = useMemo<{
     result: SimulationResult | null;
     error: string | null;
   }>(() => {
+    const numericEvents = toInputEvents(events);
     const halfLifeValue = Number(halfLife);
     const startValue = Number(startTime);
     const endValue = Number(endTime);
