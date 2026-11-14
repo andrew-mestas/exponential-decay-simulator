@@ -174,3 +174,23 @@ Use approximate comparisons for floating-point results; do not require exact equ
 ## Current status
 
 The repository scaffold and test tooling are in place. The initial TDD suite specifies the decay-model contract; tests are intentionally expected to fail until the corresponding implementation is written.
+
+
+## GitHub Pages deployment
+
+The application is configured for the repository URL:
+
+`https://andrew-mestas.github.io/exponential-decay-simulator/`
+
+Deployment is managed by `.github/workflows/deploy.yml`.
+
+For every pull request targeting `main`, GitHub Actions runs the pre-deployment checks:
+
+1. Install dependencies with `npm ci`.
+2. Run the complete test suite with `npm run test:run`.
+3. Run ESLint with `npm run lint`.
+4. Create the production bundle with `npm run build`.
+
+A push to `main` (or a manual workflow run on `main`) deploys the already-built artifact only after all pre-deployment checks pass. Pull requests run checks but do not deploy.
+
+To enable publishing, open the repository's **Settings → Pages** and select **GitHub Actions** under Build and deployment. Subsequent successful pushes to `main` publish automatically.
