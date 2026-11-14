@@ -239,8 +239,10 @@ function CurveChart({
 function DurationInput({ id, label, value, onChange, presets = false }: { id: string; label: string; value: string; onChange: (value: string) => void; presets?: boolean }) {
   const shortcuts = ["+1h", "+6h", "+12h", "+1d", "+2d", "+7d"];
   function addShortcut(shortcut: string) {
-    let current = 0;
-    try { current = parseDurationToHours(value || "0h"); } catch { current = 0; }
+    const currentValue = value || "0h";
+    const current = isValidDuration(currentValue)
+      ? parseDurationToHours(currentValue)
+      : 0;
     onChange(formatHoursAsDuration(current + parseDurationToHours(shortcut.slice(1))));
   }
   return <div className="duration-field">
@@ -562,8 +564,6 @@ function App() {
                   <span className="metric-detail">Trapezoidal estimate</span>
                 </article>
               </div>
-
-
             </>
           ) : (
             <div className="empty-results">
