@@ -268,7 +268,7 @@ function App() {
     result: SimulationResult | null;
     error: string | null;
   }>(() => {
-    const numericEvents = toInputEvents(events);
+    let numericEvents: InputEvent[];
     let halfLifeValue: number;
     let startValue: number;
     let endValue: number;
@@ -303,6 +303,7 @@ function App() {
     }
 
     try {
+      numericEvents = toInputEvents(events);
       return {
         result: runSimulation({
           events: numericEvents,
