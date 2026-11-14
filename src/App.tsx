@@ -453,9 +453,6 @@ function App() {
                   />
                 </div>
               </div>
-              <button className="button add-event-submit" type="button" onClick={addEvent}>
-                Add event
-              </button>
               {draftError && <p className="draft-error" role="alert">{draftError}</p>}
               <p className="field-help">New events appear in the breakdown below the chart, where you can edit or remove them.</p>
             </div>
