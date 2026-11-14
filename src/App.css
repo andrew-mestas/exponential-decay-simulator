@@ -639,3 +639,51 @@ tbody tr:last-child td {
 .data-table-card td:last-child {
   text-align: right;
 }
+
+
+.duration-field {
+  min-width: 0;
+}
+
+.duration-field > input[type="text"] {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 10px 11px;
+  background: var(--input-bg);
+  color: var(--text-h);
+  font: inherit;
+  font-size: 13px;
+}
+
+.duration-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.duration-presets button {
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 4px 7px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.duration-presets button:hover {
+  border-color: var(--accent);
+  color: var(--text-h);
+}
+
+.duration-hint {
+  margin: 5px 0 0;
+  color: var(--text);
+  font-size: 10px;
+  line-height: 1.4;
+}
