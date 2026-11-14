@@ -44,6 +44,17 @@ describe("recurrence accumulation", () => {
     expect(calculateTotalAtByRecurrence(simultaneous, 5, 36)).toBeCloseTo(50, 12);
   });
 
+  it("handles negative event timestamps and zero amounts without producing NaN", () => {
+    const earlierZeroAmountEvent = [
+      { id: "zero", timestamp: -10.24, amount: 0 },
+    ];
+
+    expect(
+      calculateTotalAtByRecurrence(earlierZeroAmountEvent, 0, 0.01),
+    ).toBe(0);
+    expect(calculateTotalAt(earlierZeroAmountEvent, 0, 0.01)).toBe(0);
+  });
+
   it("returns zero for an empty event list", () => {
     expect(calculateTotalAtByRecurrence([], 100, 36)).toBe(0);
   });
