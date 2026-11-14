@@ -475,3 +475,105 @@ tbody tr:last-child td {
     padding-inline: 10px;
   }
 }
+
+
+/* Compact event rows keep the controls panel from growing unnecessarily. */
+.event-card {
+  padding: 10px 11px;
+}
+
+.event-card-heading {
+  margin-bottom: 3px;
+}
+
+.event-input-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.event-input-grid .field-label {
+  margin: 7px 0 5px;
+  font-size: 11px;
+}
+
+.event-input-grid input[type="number"] {
+  padding: 8px 9px;
+  font-size: 12px;
+}
+
+.event-list {
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.control-panel .panel-section {
+  padding: 17px;
+}
+
+.control-panel .panel-section h2 {
+  margin-bottom: 12px;
+}
+
+.chart-scroll {
+  position: relative;
+}
+
+.decay-chart {
+  cursor: crosshair;
+  touch-action: pan-y;
+}
+
+.chart-crosshair {
+  stroke: var(--crosshair);
+  stroke-width: 1.25;
+  stroke-dasharray: 4 4;
+  pointer-events: none;
+}
+
+.chart-interaction-tooltip {
+  position: absolute;
+  z-index: 2;
+  top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-width: min(230px, 46%);
+  padding: 9px 11px;
+  border: 1px solid var(--tooltip-border);
+  border-radius: 8px;
+  background: var(--tooltip-bg);
+  color: var(--tooltip-text);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 22%);
+  pointer-events: none;
+  font-size: 10px;
+  transform: translateX(-8%);
+}
+
+.chart-interaction-tooltip strong {
+  margin-bottom: 2px;
+  font-size: 11px;
+}
+
+.tooltip-value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tooltip-value i {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+@media (max-width: 760px) {
+  .control-panel .panel-section {
+    padding: 16px;
+  }
+}
