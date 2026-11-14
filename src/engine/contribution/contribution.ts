@@ -4,6 +4,8 @@
  * TDD scaffold: implement this function by making the contribution tests pass.
  */
 
+import { decayConstant } from "../decay/decay";
+
 export interface InputEvent {
   id: string;
   timestamp: number;
@@ -20,5 +22,18 @@ export function calculateContribution(
   _observationTime: number,
   _halfLife: number,
 ): number {
-  throw new Error("Not implemented: calculateContribution");
+  if (
+    !Number.isFinite(_event.amount) ||
+    !Number.isFinite(_observationTime) ||
+    _event.amount < 0
+  )
+    throw new Error("Only valid numbers");
+  if (_observationTime < _event.timestamp) return 0;
+  return (
+    _event.amount *
+    Math.pow(
+      Math.E,
+      -decayConstant(_halfLife) * (_observationTime - _event.timestamp),
+    )
+  );
 }

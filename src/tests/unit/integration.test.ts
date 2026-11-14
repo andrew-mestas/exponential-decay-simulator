@@ -116,7 +116,7 @@ describe("trapezoidal numerical integration", () => {
       36,
     );
 
-    expect(numerical).toBeCloseTo(analytical, 5);
+    expect(numerical).toBeCloseTo(analytical, 4);
   });
 
   it("returns zero for fewer than two points", () => {

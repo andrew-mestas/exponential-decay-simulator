@@ -4,7 +4,11 @@
  * TDD scaffold: implement these functions by making the accumulation tests pass.
  */
 
-import type { Contribution, InputEvent } from "../contribution/contribution";
+import {
+  calculateContribution,
+  type Contribution,
+  type InputEvent,
+} from "../contribution/contribution";
 
 export type { Contribution, InputEvent } from "../contribution/contribution";
 
@@ -13,7 +17,12 @@ export function calculateContributionsAt(
   _observationTime: number,
   _halfLife: number,
 ): Contribution[] {
-  throw new Error("Not implemented: calculateContributionsAt");
+  return _events.map<Contribution>((event) => {
+    return {
+      eventId: event.id,
+      amount: calculateContribution(event, _observationTime, _halfLife),
+    };
+  });
 }
 
 export function calculateTotalAt(
@@ -21,5 +30,16 @@ export function calculateTotalAt(
   _observationTime: number,
   _halfLife: number,
 ): number {
-  throw new Error("Not implemented: calculateTotalAt");
+  const seen: Record<string, boolean> = {};
+  return calculateContributionsAt(_events, _observationTime, _halfLife).reduce(
+    (a, b) => {
+      if (b.eventId in seen) {
+        throw new Error("Duplicate event ID found");
+      } else {
+        seen[b.eventId] = true;
+      }
+      return a + b.amount;
+    },
+    0,
+  );
 }
