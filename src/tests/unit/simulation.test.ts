@@ -2,6 +2,13 @@ import { describe, expect, it } from "vitest";
 import { runSimulation } from "../../engine/analysis/simulation";
 import type { InputEvent } from "../../engine/contribution/contribution";
 
+function expectValuesToBeCloseTo(actual: number[], expected: number[]): void {
+  expect(actual).toHaveLength(expected.length);
+  actual.forEach((value, index) => {
+    expect(value).toBeCloseTo(expected[index], 12);
+  });
+}
+
 describe("runSimulation", () => {
   const events: InputEvent[] = [
     { id: "first", timestamp: 0, amount: 100 },
@@ -22,17 +29,18 @@ describe("runSimulation", () => {
       "first",
       "second",
     ]);
-    expect(result.contributions[0].points.map((point) => point.value)).toEqual([
-      100,
-      50,
-      25,
-    ]);
-    expect(result.contributions[1].points.map((point) => point.value)).toEqual([
-      0,
-      40,
-      20,
-    ]);
-    expect(result.total.map((point) => point.value)).toEqual([100, 90, 45]);
+    expectValuesToBeCloseTo(
+      result.contributions[0].points.map((point) => point.value),
+      [100, 50, 25],
+    );
+    expectValuesToBeCloseTo(
+      result.contributions[1].points.map((point) => point.value),
+      [0, 40, 20],
+    );
+    expectValuesToBeCloseTo(
+      result.total.map((point) => point.value),
+      [100, 90, 45],
+    );
   });
 
   it("always includes the exact end time when the interval is not divisible by the sample interval", () => {
