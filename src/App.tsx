@@ -31,11 +31,6 @@ const CURVE_COLORS = [
   "#fb923c",
 ];
 
-const INITIAL_EVENTS: EventDraft[] = [
-  { id: "event-1", timestamp: "0", amount: "100" },
-  { id: "event-2", timestamp: "12", amount: "50" },
-];
-
 function toInputEvents(drafts: EventDraft[]): InputEvent[] {
   return drafts.map((event) => ({
     id: event.id,
@@ -237,7 +232,10 @@ function CurveChart({
 }
 
 function App() {
-  const [events, setEvents] = useState<EventDraft[]>(INITIAL_EVENTS);
+  const [events, setEvents] = useState<EventDraft[]>([]);
+  const [draftAmount, setDraftAmount] = useState("");
+  const [draftTimestamp, setDraftTimestamp] = useState("0");
+  const [draftError, setDraftError] = useState<string | null>(null);
   const [halfLife, setHalfLife] = useState("24");
   const [startTime, setStartTime] = useState("0");
   const [endTime, setEndTime] = useState("72");
@@ -330,11 +328,32 @@ function App() {
   }
 
   function addEvent() {
+    const amount = Number(draftAmount);
+    const timestamp = Number(draftTimestamp);
+
+    if (
+      draftAmount.trim() === "" ||
+      draftTimestamp.trim() === "" ||
+      !Number.isFinite(amount) ||
+      amount < 0 ||
+      !Number.isFinite(timestamp)
+    ) {
+      setDraftError("Enter a valid nonnegative amount and a finite event time.");
+      return;
+    }
+
     setEvents((current) => [
       ...current,
-      { id: `event-${nextId}`, timestamp: startTime, amount: "25" },
+      {
+        id: `event-${nextId}`,
+        timestamp: String(timestamp),
+        amount: String(amount),
+      },
     ]);
     setNextId((current) => current + 1);
+    setDraftAmount("");
+    setDraftTimestamp(startTime);
+    setDraftError(null);
   }
 
   function removeEvent(id: string) {
@@ -400,52 +419,43 @@ function App() {
                 + Add event
               </button>
             </div>
-            <div className="event-list">
-              {events.map((event, index) => (
-                <div className="event-card" key={event.id}>
-                  <div className="event-card-heading">
-                    <span className="event-number">EVENT {index + 1}</span>
-                    <button
-                      className="remove-button"
-                      type="button"
-                      onClick={() => removeEvent(event.id)}
-                      aria-label={`Remove event ${index + 1}`}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                  <div className="event-input-grid">
-                    <div>
-                      <label className="field-label" htmlFor={`amount-${event.id}`}>
-                        Amount
-                      </label>
-                      <input
-                        id={`amount-${event.id}`}
-                        type="number"
-                        min="0"
-                        step="any"
-                        value={event.amount}
-                        onChange={(change) => updateEvent(event.id, "amount", change.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <label className="field-label" htmlFor={`time-${event.id}`}>
-                        Time
-                      </label>
-                      <input
-                        id={`time-${event.id}`}
-                        type="number"
-                        step="any"
-                        value={event.timestamp}
-                        onChange={(change) => updateEvent(event.id, "timestamp", change.target.value)}
-                      />
-                    </div>
-                  </div>
+            <div className="event-entry-form">
+              <div className="event-input-grid">
+                <div>
+                  <label className="field-label" htmlFor="new-event-amount">Amount</label>
+                  <input
+                    id="new-event-amount"
+                    type="number"
+                    min="0"
+                    step="any"
+                    placeholder="e.g. 50"
+                    value={draftAmount}
+                    onChange={(change) => {
+                      setDraftAmount(change.target.value);
+                      setDraftError(null);
+                    }}
+                  />
                 </div>
-              ))}
-              {events.length === 0 && (
-                <p className="empty-state">No events yet. Add an event to begin.</p>
-              )}
+                <div>
+                  <label className="field-label" htmlFor="new-event-time">Event time</label>
+                  <input
+                    id="new-event-time"
+                    type="number"
+                    step="any"
+                    placeholder="e.g. 24"
+                    value={draftTimestamp}
+                    onChange={(change) => {
+                      setDraftTimestamp(change.target.value);
+                      setDraftError(null);
+                    }}
+                  />
+                </div>
+              </div>
+              <button className="button add-event-submit" type="button" onClick={addEvent}>
+                Add event
+              </button>
+              {draftError && <p className="draft-error" role="alert">{draftError}</p>}
+              <p className="field-help">New events appear in the breakdown below the chart, where you can edit or remove them.</p>
             </div>
           </section>
 
@@ -586,6 +596,7 @@ function App() {
                         <th>Input time</th>
                         <th>Input amount</th>
                         <th>Analytical AUC</th>
+                        <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -593,13 +604,48 @@ function App() {
                         const event = events.find((item) => item.id === series.eventId);
                         return (
                           <tr key={series.eventId}>
-                            <td><span className="table-dot" style={{ backgroundColor: CURVE_COLORS[index % CURVE_COLORS.length] }} />Event {index + 1}</td>
-                            <td>{event?.timestamp ?? "—"}</td>
-                            <td>{event?.amount ?? "—"}</td>
+                            <td>
+                              <span className="table-dot" style={{ backgroundColor: CURVE_COLORS[index % CURVE_COLORS.length] }} />
+                              Event {index + 1}
+                            </td>
+                            <td>
+                              <input
+                                className="table-edit-input"
+                                aria-label={`Event ${index + 1} time`}
+                                type="number"
+                                step="any"
+                                value={event?.timestamp ?? ""}
+                                onChange={(change) => updateEvent(series.eventId, "timestamp", change.target.value)}
+                              />
+                            </td>
+                            <td>
+                              <input
+                                className="table-edit-input"
+                                aria-label={`Event ${index + 1} amount`}
+                                type="number"
+                                min="0"
+                                step="any"
+                                value={event?.amount ?? ""}
+                                onChange={(change) => updateEvent(series.eventId, "amount", change.target.value)}
+                              />
+                            </td>
                             <td>{formatNumber(series.auc)}</td>
+                            <td>
+                              <button
+                                className="remove-button"
+                                type="button"
+                                onClick={() => removeEvent(series.eventId)}
+                                aria-label={`Delete event ${index + 1}`}
+                              >
+                                Delete
+                              </button>
+                            </td>
                           </tr>
                         );
                       })}
+                      {events.length === 0 && (
+                        <tr><td colSpan={5} className="empty-table-cell">No events added yet.</td></tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
