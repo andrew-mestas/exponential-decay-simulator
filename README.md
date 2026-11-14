@@ -15,29 +15,39 @@ The project is being developed test-first: the mathematical engine is specified 
 
 ## Mathematical model
 
-For a single input of amount \(D_i\) at time \(t_i\), with half-life \(T_{1/2}\), its contribution at time \(t\) is
+For a single input of amount $D_i$ at time $t_i$, with half-life $T_{1/2}$, its contribution at time $t$ is:
 
-\[
+$$
 C_i(t) =
 \begin{cases}
 0, & t < t_i \\
-D_i 2^{- (t-t_i)/T_{1/2}}, & t \ge t_i
+D_i \cdot 2^{-\frac{t-t_i}{T_{1/2}}}, & t \ge t_i
 \end{cases}
-\]
+$$
 
 The combined amount is the sum of all inputs that have occurred:
 
-\[
-A(t) = \sum_{i:t_i \le t} D_i 2^{- (t-t_i)/T_{1/2}}
-\]
+$$
+A(t) = \sum_{i:t_i \le t} D_i \cdot 2^{-\frac{t-t_i}{T_{1/2}}}
+$$
 
-Equivalently, with decay constant \(k = \ln(2)/T_{1/2}\), each contribution is \(D_i e^{-k(t-t_i)}\).
+Equivalently, define the decay constant as:
+
+$$
+k = \frac{\ln(2)}{T_{1/2}}
+$$
+
+Then each contribution can be written in exponential form:
+
+$$
+C_i(t) = D_i e^{-k(t-t_i)}
+$$
 
 For chronologically sorted events, the same state can be computed recursively:
 
-\[
-A_n = A_{n-1}e^{-k(t_n-t_{n-1})}+D_n
-\]
+$$
+A_n = A_{n-1}e^{-k(t_n-t_{n-1})} + D_n
+$$
 
 The direct-sum implementation will serve as the simple reference implementation; the recurrence implementation will be checked against it.
 
@@ -45,15 +55,17 @@ The direct-sum implementation will serve as the simple reference implementation;
 
 The definite integral over a selected interval measures amount accumulated over time:
 
-\[
-\operatorname{AUC}(a,b)=\int_a^b A(t)\,dt
-\]
+$$
+\operatorname{AUC}(a,b) = \int_a^b A(t)\,dt
+$$
 
-Its units are amount × time (for example, unit-hours), not amount. The time-weighted average is
+Its units are amount multiplied by time (for example, unit-hours), not amount.
 
-\[
-A_{\mathrm{avg}}=\frac{\operatorname{AUC}(a,b)}{b-a}
-\]
+The time-weighted average is:
+
+$$
+A_{\mathrm{avg}} = \frac{\operatorname{AUC}(a,b)}{b-a}
+$$
 
 The AUC is useful for comparing the overall profile of two schedules, while the instantaneous value and peak describe the amount at a particular time and the maximum reached.
 
