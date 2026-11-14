@@ -32,6 +32,10 @@ const CURVE_COLORS = [
   "#fb923c",
 ];
 
+function isValidDuration(value: string): boolean {
+  try { return Number.isFinite(parseDurationToHours(value)); } catch { return false; }
+}
+
 function toInputEvents(drafts: EventDraft[]): InputEvent[] {
   return drafts.map((event) => ({
     id: event.id,
@@ -290,7 +294,7 @@ function App() {
         (event) =>
           event.timestamp.trim() === "" ||
           event.amount.trim() === "" ||
-          !Number.isFinite(parseDurationToHours(event.timestamp)) ||
+          !isValidDuration(event.timestamp) ||
           !Number.isFinite(Number(event.amount)) ||
           Number(event.amount) < 0,
       )
@@ -355,7 +359,8 @@ function App() {
 
   function addEvent() {
     const amount = Number(draftAmount);
-    const timestamp = Number(draftTimestamp);
+    let timestamp: number;
+    try { timestamp = parseDurationToHours(draftTimestamp); } catch { timestamp = Number.NaN; }
 
     if (
       draftAmount.trim() === "" ||
